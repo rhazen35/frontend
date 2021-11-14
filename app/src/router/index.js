@@ -37,7 +37,6 @@ router.beforeEach((to, from, next) => {
 
   if (to.name === 'Login' && isAuthenticated) {
     return router.back();
-
   }
 
   next()
