@@ -1,28 +1,66 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <v-app>
+      <v-app-bar
+          app
+          color="primary"
+          class="white--text"
+      >
+        <v-img
+            alt="Skeme Logo"
+            class="shrink mr-2"
+            contain
+            src="@/assets/skeme/skeme-icon.svg"
+            transition="scale-transition"
+            width="40"
+        />
+        <v-app-bar-title class="ml-2">Skeme</v-app-bar-title>
+
+        <v-spacer></v-spacer>
+
+        <v-btn
+            icon
+            @click="logout"
+            v-if="isAuthenticated"
+        >
+          <v-icon>mdi-logout</v-icon>
+        </v-btn>
+
+      </v-app-bar>
+      <NavigationDrawer v-if="isAuthenticated"></NavigationDrawer>
+      <v-main>
+        <v-container fluid>
+          <router-view/>
+        </v-container>
+      </v-main>
+    </v-app>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+  import NavigationDrawer from './components/layout/NavigationDrawer';
 
-export default {
-  name: 'App',
-  components: {
-    HelloWorld
+  export default {
+    name: 'App',
+    components: {
+      NavigationDrawer
+    },
+    data() {
+      return {
+
+      }
+    },
+    computed: {
+      isAuthenticated: {
+        get() {
+          return this.$store.getters['isAuthenticated']
+        }
+      }
+    },
+    methods: {
+      logout() {
+        this.$router.push('/logout')
+      }
+    }
   }
-}
 </script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
