@@ -154,7 +154,7 @@
           text: '',
           color: null,
           closeButtonColor: null,
-          timeout: 7000
+          timeout: 7000,
         }
       }
     },
@@ -165,7 +165,7 @@
       textFieldChange() {
         if (null !== this.username && null !== this.password) {
           this.invalidForm = false;
-          this.errors.global = '';
+          this.errors.global = ''
         }
       },
       authenticate() {
@@ -177,7 +177,7 @@
               username: this.username,
               password: this.password
             }
-        );
+        )
       },
       authenticatedSubscriber() {
         const url = new URL('http://127.0.0.1:3000/.well-known/mercure');
@@ -188,8 +188,6 @@
 
         eventSource.onmessage = (event) => {
           const data = JSON.parse(event.data)
-
-          console.log(data);
 
           this.disableLoading()
 
