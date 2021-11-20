@@ -51,11 +51,22 @@ const actions = {
         localStorage.removeItem('token')
         commit('loggedOut');
     },
-    async getUsers() {
+    async getUsers(_, payload) {
         const data = {
             channel: "get_users",
-            payload: {}
+            payload: {
+                page: payload.page,
+                limit: payload.itemsPerPage
+            }
         };
+
+        if (0 !== payload.sortBy.length) {
+            data.payload.sortBy = payload.sortBy
+        }
+
+        if (0 !== payload.sortOrder.length) {
+            data.payload.sortOrder = payload.sortOrder
+        }
 
         const options = {
             method: 'POST',
@@ -97,7 +108,8 @@ function getFormDataFromData(data) {
     for (let dataKey in data) {
         if(dataKey === 'payload') {
             for (let payloadKey in data[dataKey]) {
-                formData.append(`payload[${payloadKey}]`, data[dataKey][payloadKey]);
+                const dataItem = !Array.isArray(data[dataKey][payloadKey]) ? data[dataKey][payloadKey] : JSON.stringify(data[dataKey][payloadKey])
+                formData.append(`payload[${payloadKey}]`, dataItem);
             }
         }
         else {

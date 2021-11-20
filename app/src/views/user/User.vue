@@ -14,6 +14,10 @@
         :server-items-length="totalItems"
         :loading="loading"
         class="elevation-20"
+        multi-sort
+        :footer-props="{
+          'items-per-page-options': [10, 20, 30, 40, 50, 100]
+        }"
     >
       <template v-slot:item.fullName="{ item }">
           <span>{{ item.fullName }}</span>
@@ -68,9 +72,10 @@ export default {
         const data = JSON.parse(event.data)
 
         if (Object.prototype.hasOwnProperty.call(data,'users')) {
-          this.$store.dispatch('setUsers', data.users).then(() => {
+            const paginationData = data.users;
+            this.$store.dispatch('setUsers', paginationData.items).then(() => {
             this.items = this.$store.getters['getUsers']
-            this.totalItems = this.items.length;
+            this.totalItems = paginationData.totalHits;
           });
 
           this.loading = false
@@ -78,7 +83,24 @@ export default {
       }
     },
     getData() {
-      this.$store.dispatch('getUsers')
+      const { sortBy, sortDesc, page, itemsPerPage } = this.options
+
+      let sortOrder = [];
+      if (0 !== sortDesc.length) {
+        for (const sort of sortDesc) {
+          sortOrder.push(sort ? 'desc': 'asc')
+        }
+      }
+
+      this.$store.dispatch(
+          'getUsers',
+          {
+            sortBy: sortBy,
+            sortOrder: sortOrder,
+            page: page,
+            itemsPerPage: itemsPerPage
+          }
+      )
     },
     itemClass() {
       return 'row-class';
