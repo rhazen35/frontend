@@ -49,9 +49,19 @@ export default {
     return {
       items: [
         {
+          title: 'Home',
+          icon: 'mdi-home',
+          path: '/'
+        },
+        {
           title: 'User Management',
           icon: 'mdi-account-group',
           path: '/users'
+        },
+        {
+          title: 'About',
+          icon: 'mdi-information',
+          path: '/about'
         }
       ]
     }

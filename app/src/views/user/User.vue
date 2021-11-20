@@ -1,15 +1,67 @@
 <template>
   <div class="ma-15">
+    <v-item-group>
+      <v-container class="pa-0">
+        <v-row>
+          <v-col>
+            <v-item>
+              <v-card
+                  :color="''"
+                  class="d-flex pa-6 justify-center"
+                  dark
+                  height="100"
+              >
+                <div class="d-flex align-content-sm-space-between flex-grow-1">
+                  <div class="flex-grow-0">
+                    <v-icon
+                        x-large
+                    >
+                      mdi-account-group
+                    </v-icon>
+                  </div>
+
+                    <div
+                        class="flex-grow-1 text-center text-h5 pt-2"
+                    >
+                      Users
+                    </div>
+                </div>
+              </v-card>
+            </v-item>
+          </v-col>
+          <v-col
+              cols="12"
+              md="4"
+          >
+            <v-item>
+              <v-card
+                  :color="''"
+                  class="d-flex pa-6"
+                  dark
+                  height="100"
+              >
+                <div class="d-flex align-content-sm-space-between flex-grow-1">
+                  <div class="text-body-1 flex-grow-1">
+                    Total Users
+                  </div>
+                  <div class="text-h3 flex-grow-1">
+                    <AnimatedNumber :number="totalItems"></AnimatedNumber>
+                  </div>
+                </div>
+              </v-card>
+            </v-item>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-item-group>
     <v-banner
         color="orange darken-3"
         single-line
     >
-      Users
     </v-banner>
     <v-data-table
         :headers="headers"
         :items="items"
-        :item-class="itemClass"
         :options.sync="options"
         :server-items-length="totalItems"
         :loading="loading"
@@ -33,8 +85,13 @@
 </template>
 
 <script>
+import AnimatedNumber from "../../components/layout/AnimatedNumber";
+
 export default {
   name: 'User',
+  components: {
+      AnimatedNumber
+  },
   data () {
     return {
       totalItems: 0,
@@ -83,6 +140,8 @@ export default {
       }
     },
     getData() {
+      this.loading = true;
+
       const { sortBy, sortDesc, page, itemsPerPage } = this.options
 
       let sortOrder = [];
@@ -102,15 +161,15 @@ export default {
           }
       )
     },
-    itemClass() {
-      return 'row-class';
-    }
   },
 }
 </script>
 <style>
   .v-data-table-header {
     background-color: #404040;
+  }
+  .v-data-table-header th {
+    font-size: 13px !important;
   }
   .v-data-table tbody td {
     font-size: 12px !important;

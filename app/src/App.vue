@@ -30,7 +30,9 @@
       <NavigationDrawer v-if="isAuthenticated"></NavigationDrawer>
       <v-main>
         <v-container fluid>
-          <router-view/>
+          <v-scroll-x-transition mode="out-in" appear>
+            <router-view/>
+          </v-scroll-x-transition>
           <LoginExpiredComponent :showDialog="loginExpiredDialog"></LoginExpiredComponent>
         </v-container>
       </v-main>

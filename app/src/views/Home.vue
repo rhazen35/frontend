@@ -1,10 +1,36 @@
 <template>
-  <div class="home">
+  <div class="home ma-15">
+    <v-container>
+      <v-row>
+        <v-col>
+          <v-card class="pa-4">
+            <div class="title">Microservice Architecture</div>
+            <div class="sub-title grey--text">Event Driven Architecture</div>
+          </v-card>
+        </v-col>
+        <v-col>
+          <v-card>
+            <v-img
+                max-height="600"
+                max-width="1000"
+                src="@/assets/images/home_banner.png"
+                contain
+            >
+            </v-img>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
   </div>
 </template>
 
 <script>
 export default {
   name: 'Home',
+  data () {
+    return {
+
+    }
+  }
 }
 </script>
