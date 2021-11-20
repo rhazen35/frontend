@@ -67,8 +67,8 @@
                   class="mb-3"
                   min-width="200px"
                   color="primary"
-                  @click="authenticate"
                   :disabled="invalidForm"
+                  @click="authenticate"
               >
                 Login
               </v-btn>
@@ -96,19 +96,17 @@
         right
         top
         :color="snackbar.color"
+        :multi-line="snackbar.mode === 'multi-line'"
     >
-      {{ snackbar.text }}
-
-      <template v-slot:action="{ attrs }">
-        <v-btn
-            color="snackbar.closeButtonColor"
-            text
-            v-bind="attrs"
-            @click="snackbar.show = false"
-        >
-          Close
-        </v-btn>
-      </template>
+      <v-layout align-center pr-4>
+        <v-icon class="pr-3" dark large>mdi-{{ snackbar.icon }}</v-icon>
+        <v-layout column>
+          <div>
+            <strong>{{ snackbar.title }}</strong>
+          </div>
+          <div>{{ snackbar.text }}</div>
+        </v-layout>
+      </v-layout>
     </v-snackbar>
   </v-app>
   </validation-observer>
@@ -151,9 +149,11 @@
         },
         snackbar: {
           show: false,
-          text: '',
+          title: null,
+          text: null,
           color: null,
-          closeButtonColor: null,
+          icon: null,
+          mode: null,
           timeout: 7000,
         }
       }
@@ -169,8 +169,8 @@
         }
       },
       authenticate() {
-        this.$refs.observer.validate()
         this.enableLoading()
+        this.$refs.observer.validate()
         this.$store.dispatch(
             'authenticate',
             {
@@ -195,9 +195,10 @@
             data.errors.forEach((error) => {
               if ("" === error.propertyPath) {
                 this.errors.global = error.message;
+                this.snackbar.title = 'Validation error';
                 this.snackbar.text = 'The form contains validation errors';
                 this.snackbar.color = 'error';
-                this.snackbar.closeButtonColor = 'black';
+                this.snackbar.icon = 'alert-circle';
                 this.snackbar.show = true;
               }
             });

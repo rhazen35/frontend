@@ -31,6 +31,7 @@
       <v-main>
         <v-container fluid>
           <router-view/>
+          <LoginExpiredComponent :showDialog="loginExpiredDialog"></LoginExpiredComponent>
         </v-container>
       </v-main>
     </v-app>
@@ -39,16 +40,21 @@
 
 <script>
   import NavigationDrawer from './components/layout/NavigationDrawer';
+  import LoginExpiredComponent from "./components/authentication/LoginExpired";
 
   export default {
     name: 'App',
     components: {
-      NavigationDrawer
+      NavigationDrawer,
+      LoginExpiredComponent
     },
     data() {
       return {
-
+        loginExpiredDialog: false
       }
+    },
+    created() {
+      this.authenticationSubscriber()
     },
     computed: {
       isAuthenticated: {
@@ -58,8 +64,34 @@
       }
     },
     methods: {
+      authenticationSubscriber() {
+        const url = new URL('http://127.0.0.1:3000/.well-known/mercure')
+        url.searchParams.append('topic', 'http://127.0.0.1:3000/.well-known/mercure/token_expired')
+
+        const eventSource = new EventSource(url)
+
+        eventSource.onmessage = (event) => {
+          const data = JSON.parse(event.data)
+
+          if (Object.prototype.hasOwnProperty.call(data,'token')) {
+            this.overlay = true
+            this.loginExpiredDialog = true
+
+            this.delay(5000)
+                .then(() => {
+                  this.loginExpiredDialog = false
+                  this.logout()
+                })
+          }
+        }
+      },
       logout() {
         this.$router.push('/logout')
+      },
+      delay(t, v) {
+        return new Promise(function(resolve) {
+          setTimeout(resolve.bind(null, v), t)
+        });
       }
     }
   }
