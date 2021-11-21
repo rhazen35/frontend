@@ -1,5 +1,5 @@
 <template>
-  <div>You have been logged out.</div>
+  <div></div>
 </template>
 <script>
   export default {

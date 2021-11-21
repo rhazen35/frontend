@@ -1,7 +1,7 @@
 <template>
   <div class="ma-15">
-    <v-item-group>
-      <v-container class="pa-0">
+    <v-container fluid class="pa-0 ma-0">
+      <v-item-group>
         <v-row>
           <v-col>
             <v-item>
@@ -52,8 +52,8 @@
             </v-item>
           </v-col>
         </v-row>
-      </v-container>
-    </v-item-group>
+      </v-item-group>
+    </v-container>
     <v-banner
         color="orange darken-3"
         single-line
@@ -63,6 +63,7 @@
         :headers="headers"
         :items="items"
         :options.sync="options"
+        :page.sync="options.page"
         :server-items-length="totalItems"
         :loading="loading"
         class="elevation-20"
@@ -96,7 +97,7 @@ export default {
     return {
       totalItems: 0,
       items: [],
-      loading: true,
+      loading: false,
       options: {},
       headers: [
         {text: 'Name', value: 'fullName'},
@@ -110,9 +111,8 @@ export default {
   watch : {
     options: {
       handler () {
-        this.getData()
+          this.getData()
       },
-      deep: true,
     }
   },
   created() {
@@ -120,26 +120,25 @@ export default {
   },
   methods: {
     userSubscriber() {
-      const url = new URL('http://127.0.0.1:3000/.well-known/mercure')
-      url.searchParams.append('topic', 'http://127.0.0.1:3000/.well-known/mercure/get_users_result')
+      const hasTopic = this.$store.getters.hasTopic('get_users_result')
 
-      const eventSource = new EventSource(url)
+      const eventSource = !hasTopic
+        ? this.$mercureSubscriber.subscribe(['get_users_result'])
+        : this.$store.getters['getEventSource']
 
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data)
 
         if (Object.prototype.hasOwnProperty.call(data,'users')) {
             const paginationData = data.users;
-            this.$store.dispatch('setUsers', paginationData.items).then(() => {
-            this.items = this.$store.getters['getUsers']
+            this.loading = false
             this.totalItems = paginationData.totalHits;
-          });
-
-          this.loading = false
+            this.items = paginationData.items;
         }
       }
     },
     getData() {
+      this.items = []
       this.loading = true;
 
       const { sortBy, sortDesc, page, itemsPerPage } = this.options

@@ -41,6 +41,7 @@
                       :error-messages="errors"
                       required
                       @input="textFieldChange"
+                      autofocus
                   ></v-text-field>
                 </validation-provider>
                 <validation-provider
@@ -180,18 +181,13 @@
         )
       },
       authenticatedSubscriber() {
-        const url = new URL('http://127.0.0.1:3000/.well-known/mercure');
-        url.searchParams.append('topic', 'http://127.0.0.1:3000/.well-known/mercure/user_authenticated');
-        url.searchParams.append('topic', 'http://127.0.0.1:3000/.well-known/mercure/invalid_credentials');
-
-        const eventSource = new EventSource(url)
-
-        eventSource.onmessage = (event) => {
+        const eventSource = this.$mercureSubscriber.subscribe(['user_authenticated', 'invalid_credentials'])
+        eventSource.onmessage = () => {
           const data = JSON.parse(event.data)
 
           this.disableLoading()
 
-          if (Object.prototype.hasOwnProperty.call(data,'errors')) {
+          if (Object.prototype.hasOwnProperty.call(data, 'errors')) {
             data.errors.forEach((error) => {
               if ("" === error.propertyPath) {
                 this.errors.global = error.message;
@@ -204,13 +200,13 @@
             });
           }
 
-          if (Object.prototype.hasOwnProperty.call(data,'token')) {
+          if (Object.prototype.hasOwnProperty.call(data, 'token')) {
             this.$store.dispatch('login', data.token)
             if (this.$route.path !== '/') {
               this.$router.push('/')
             }
           }
-        };
+        }
       },
       enableLoading() {
         this.showOverlay = true;

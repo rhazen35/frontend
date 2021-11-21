@@ -1,7 +1,6 @@
 <template>
   <div class="home ma-15">
     <v-container>
-      <v-row>
         <v-col>
           <v-card class="pa-4">
             <div class="title">Microservice Architecture</div>
@@ -19,7 +18,6 @@
             </v-img>
           </v-card>
         </v-col>
-      </v-row>
     </v-container>
   </div>
 </template>
