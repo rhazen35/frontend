@@ -2,19 +2,19 @@
   <span>{{ displayNumber }}</span>
 </template>
 <script>
+import {mapGetters} from "vuex";
+
 export default {
   name: 'AnimatedNumber',
-  props:{'number':{default:0}},
   data () {
     return {
-      displayNumber:0,
-      interval:false
+      displayNumber: 0,
+      interval: false
     }
   },
-  ready:function(){
+  created() {
     this.displayNumber = this.number ? this.number : 0;
   },
-
   watch:{
     number: function(){
       clearInterval(this.interval);
@@ -31,6 +31,9 @@ export default {
         }
       }.bind(this), 75);
     }
-  }
+  },
+  computed: mapGetters({
+    number: 'totalItems'
+  })
 }
 </script>

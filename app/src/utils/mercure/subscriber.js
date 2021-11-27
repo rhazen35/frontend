@@ -1,4 +1,4 @@
-import Store from '../../store/store';
+import store from '../../store/store';
 
 class Subscriber {
   constructor() {
@@ -9,7 +9,7 @@ class Subscriber {
     this.registerTopics(topics)
 
     const eventSource = new EventSource(this.url)
-    Store.dispatch('setEventSource', eventSource)
+    store.dispatch('setEventSource', eventSource)
 
     return eventSource
   }
@@ -18,7 +18,7 @@ class Subscriber {
 
     for (let topic of topics) {
       this.url.searchParams.append('topic', `http://127.0.0.1:3000/.well-known/mercure/${topic}`)
-      Store.dispatch('addToTopics', topic)
+      store.dispatch('addToTopics', topic)
     }
   }
 }

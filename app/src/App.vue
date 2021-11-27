@@ -3,7 +3,7 @@
     <v-app>
       <v-app-bar
           app
-          color="#075AB6"
+          color="primary"
           class="white--text"
       >
         <v-img

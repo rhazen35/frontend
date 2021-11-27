@@ -45,11 +45,22 @@
                     Total Users
                   </div>
                   <div class="text-h3 flex-grow-1">
-                    <AnimatedNumber :number="totalItems"></AnimatedNumber>
+                    <AnimatedNumber></AnimatedNumber>
                   </div>
                 </div>
               </v-card>
             </v-item>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
+            <v-text-field
+                v-model="search"
+                append-icon="mdi-magnify"
+                label="Search"
+                single-line
+                hide-details
+            ></v-text-field>
           </v-col>
         </v-row>
       </v-item-group>
@@ -66,6 +77,7 @@
         :page.sync="options.page"
         :server-items-length="totalItems"
         :loading="loading"
+        :search="search"
         class="elevation-20"
         multi-sort
         :footer-props="{
@@ -87,6 +99,9 @@
 
 <script>
 import AnimatedNumber from "../../components/layout/AnimatedNumber";
+import { mapFields } from 'vuex-map-fields';
+import UserSubscriber from '../../utils/modules/user/userSubscriber'
+import {debounce} from '../../utils/helpers/helpers'
 
 export default {
   name: 'User',
@@ -95,9 +110,7 @@ export default {
   },
   data () {
     return {
-      totalItems: 0,
-      items: [],
-      loading: false,
+      timeout: null,
       options: {},
       headers: [
         {text: 'Name', value: 'fullName'},
@@ -112,34 +125,31 @@ export default {
     options: {
       handler () {
           this.getData()
-      },
+      }
+    },
+    search: {
+      handler: debounce(function () {
+        this.getData()
+      }, 500)
     }
+  },
+  computed: {
+    ...mapFields([
+        'loading',
+        'items',
+        'totalItems',
+        'search'
+    ])
   },
   created() {
     this.userSubscriber()
   },
   methods: {
     userSubscriber() {
-      const hasTopic = this.$store.getters.hasTopic('get_users_result')
-
-      const eventSource = !hasTopic
-        ? this.$mercureSubscriber.subscribe(['get_users_result'])
-        : this.$store.getters['getEventSource']
-
-      eventSource.onmessage = (event) => {
-        const data = JSON.parse(event.data)
-
-        if (Object.prototype.hasOwnProperty.call(data,'users')) {
-            const paginationData = data.users;
-            this.loading = false
-            this.totalItems = paginationData.totalHits;
-            this.items = paginationData.items;
-        }
-      }
+      UserSubscriber.getUsers()
     },
     getData() {
-      this.items = []
-      this.loading = true;
+      this.$store.commit('loading', true);
 
       const { sortBy, sortDesc, page, itemsPerPage } = this.options
 
@@ -156,11 +166,12 @@ export default {
             sortBy: sortBy,
             sortOrder: sortOrder,
             page: page,
-            itemsPerPage: itemsPerPage
+            itemsPerPage: itemsPerPage,
+            search: this.$store.getters.search
           }
       )
     },
-  },
+  }
 }
 </script>
 <style>

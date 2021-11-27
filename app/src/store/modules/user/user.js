@@ -1,17 +1,32 @@
+import { getField, updateField } from 'vuex-map-fields';
+
 const url = 'http://127.0.0.1:8000/api/message/publish'
 
 const state = {
     loggedIn: null !== localStorage.getItem('token'),
-    users: []
+    totalItems: 0,
+    items: [],
+    loading: false,
+    search: ''
 };
 
 const getters = {
-    isAuthenticated() {
+    isAuthenticated: state => {
         return !!state.loggedIn
     },
-    getUsers() {
-        return state.users
-    }
+    loading: state => {
+        return state.loading
+    },
+    items: state => {
+        return state.items
+    },
+    totalItems: state => {
+        return state.totalItems
+    },
+    search: state => {
+        return state.search
+    },
+    getField
 };
 
 const actions = {
@@ -60,6 +75,10 @@ const actions = {
             }
         };
 
+        if ('' !== payload.search) {
+            data.payload.search = payload.search
+        }
+
         if (0 !== payload.sortBy.length) {
             data.payload.sortBy = payload.sortBy
         }
@@ -85,9 +104,6 @@ const actions = {
                 // TODO: Handle errors
                 console.log(errors)
             });
-    },
-    setUsers({commit}, users) {
-        commit('users', users)
     }
 };
 
@@ -98,9 +114,19 @@ const mutations = {
     loggedOut(state) {
         state.loggedIn = false
     },
-    users(state, users) {
-        state.users = users
-    }
+    items(state, items) {
+        state.items = items
+    },
+    totalItems(state, totalItems) {
+        state.totalItems = totalItems
+    },
+    loading(state, isLoading) {
+        state.loading = isLoading
+    },
+    search(state, search) {
+        state.search = search
+    },
+    updateField
 };
 
 function getFormDataFromData(data) {

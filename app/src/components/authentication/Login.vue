@@ -15,18 +15,13 @@
             width="40%"
             height="auto"
         >
-          <v-row
-              justify="center"
-              class="pa-2"
-          >
-            <v-toolbar dark color="primary">
-              <v-toolbar-title>Login</v-toolbar-title>
-            </v-toolbar>
+          <v-card-title>Login</v-card-title>
+          <v-row justify="center">
             <v-card-text>
               <v-card-subtitle>
                 <div style="height: 10px; max-height: 10px; color: #ff726f">{{ errors.global }}</div>
               </v-card-subtitle>
-              <form>
+              <form class="pl-4 pr-4">
                 <validation-provider
                     v-slot="{ errors }"
                     name="Username"
@@ -62,7 +57,7 @@
                 </validation-provider>
               </form>
             </v-card-text>
-            <v-card-actions class="text-right">
+            <v-card-actions class="text-right pa-4">
               <v-spacer></v-spacer>
               <v-btn
                   class="mb-3"
@@ -217,3 +212,8 @@
     },
   };
 </script>
+<style>
+  .v-card__title {
+    background-color: #2196F3;
+  }
+</style>
