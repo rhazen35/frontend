@@ -5,21 +5,23 @@ class Subscriber {
     this.url = new URL('http://127.0.0.1:3000/.well-known/mercure')
   }
 
-  subscribe(topics) {
-    this.registerTopics(topics)
+  subscribe(newTopic) {
+    const hasTopic = store.getters.hasTopic(newTopic)
 
-    const eventSource = new EventSource(this.url)
-    store.dispatch('setEventSource', eventSource)
+    if (hasTopic) {
+      return null
+    }
 
-    return eventSource
-  }
+    this.url.searchParams.append('topic', `http://127.0.0.1:3000/.well-known/mercure/${newTopic}`)
 
-  registerTopics(topics) {
-
+    const topics = store.getters.topics
     for (let topic of topics) {
       this.url.searchParams.append('topic', `http://127.0.0.1:3000/.well-known/mercure/${topic}`)
-      store.dispatch('addToTopics', topic)
     }
+
+    store.dispatch('addTopic', newTopic)
+
+    return new EventSource(this.url)
   }
 }
 

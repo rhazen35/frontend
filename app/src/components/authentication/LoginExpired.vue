@@ -2,7 +2,7 @@
   <v-row justify="space-around">
     <v-col cols="auto">
       <v-dialog
-          max-width="600"
+          max-width="800"
           v-model="dialog"
           overlay-opacity="0.90"
           persistent
@@ -13,7 +13,7 @@
                 src="@/assets/images/login_expired.webp"
                 class="white--text align-end"
                 gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
-                height="200px"
+                height="400px"
             >
               <v-card-title>Login expired</v-card-title>
             </v-img>

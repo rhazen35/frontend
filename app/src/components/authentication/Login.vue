@@ -37,6 +37,7 @@
                       required
                       @input="textFieldChange"
                       autofocus
+                      color="amber darken-1"
                   ></v-text-field>
                 </validation-provider>
                 <validation-provider
@@ -53,6 +54,7 @@
                       :error-messages="errors"
                       required
                       @input="textFieldChange"
+                      color="amber darken-1"
                   ></v-text-field>
                 </validation-provider>
               </form>
@@ -137,8 +139,7 @@
         showOverlay: false,
         absolute: true,
         opacity: 0.5,
-        progressCircularColor: 'primary',
-        progressCircularColors: ['amber', 'red', 'purple', 'green', 'primary'],
+
         invalidForm: true,
         errors: {
           global: '',
@@ -151,6 +152,13 @@
           icon: null,
           mode: null,
           timeout: 7000,
+        }
+      }
+    },
+    computed: {
+      progressCircularColor: {
+        get() {
+          return this.$store.getters.progressCircularColor
         }
       }
     },
@@ -176,9 +184,19 @@
         )
       },
       authenticatedSubscriber() {
-        const eventSource = this.$mercureSubscriber.subscribe(['user_authenticated', 'invalid_credentials'])
-        eventSource.onmessage = () => {
+        const topic = 'user_authenticated';
+        const eventSource = this.$mercureSubscriber.subscribe(topic)
+
+        if (null === eventSource) {
+          return
+        }
+
+        eventSource.onmessage = (event) => {
           const data = JSON.parse(event.data)
+
+          if (topic !== data.channel) {
+            return
+          }
 
           this.disableLoading()
 
@@ -214,6 +232,6 @@
 </script>
 <style>
   .v-card__title {
-    background-color: #2196F3;
+    background-color: #3F51B5;
   }
 </style>

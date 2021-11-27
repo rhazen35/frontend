@@ -53,14 +53,23 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col>
+          <v-col
+              cols="8"
+          >
             <v-text-field
                 v-model="search"
                 append-icon="mdi-magnify"
                 label="Search"
                 single-line
                 hide-details
+                class="mb-2"
             ></v-text-field>
+          </v-col>
+          <v-col
+              cols="4"
+              class="text-right"
+          >
+            <CreateUser></CreateUser>
           </v-col>
         </v-row>
       </v-item-group>
@@ -72,12 +81,12 @@
     </v-banner>
     <v-data-table
         :headers="headers"
-        :items="items"
-        :options.sync="options"
-        :page.sync="options.page"
-        :server-items-length="totalItems"
-        :loading="loading"
-        :search="search"
+        :items="table.items"
+        :options.sync="table.options"
+        :page.sync="table.options.page"
+        :server-items-length="table.totalItems"
+        :loading="table.loading"
+        :search="table.search"
         class="elevation-20"
         multi-sort
         :footer-props="{
@@ -94,30 +103,49 @@
         <span>{{ null !== item.lastLogin ? new Date(item.lastLogin).toLocaleString() : "" }}</span>
       </template>
     </v-data-table>
+    <v-snackbar
+        v-model="snackbar.show"
+        :timeout="snackbar.timeout"
+        absolute
+        right
+        top
+        :color="snackbar.color"
+        :multi-line="snackbar.mode === 'multi-line'"
+    >
+      <v-layout align-center pr-4>
+        <v-icon class="pr-3" dark large>mdi-{{ snackbar.icon }}</v-icon>
+        <v-layout column>
+          <div>
+            <strong>{{ snackbar.title }}</strong>
+          </div>
+          <div>{{ snackbar.text }}</div>
+        </v-layout>
+      </v-layout>
+    </v-snackbar>
   </div>
 </template>
 
 <script>
-import AnimatedNumber from "../../components/layout/AnimatedNumber";
-import { mapFields } from 'vuex-map-fields';
+import AnimatedNumber from "../../components/layout/AnimatedNumber"
 import UserSubscriber from '../../utils/modules/user/userSubscriber'
 import {debounce} from '../../utils/helpers/helpers'
+import CreateUser from "../../components/modules/user/CreateUser.vue"
+import UserData from '../../utils/modules/user/userData'
 
 export default {
   name: 'User',
   components: {
-      AnimatedNumber
+    AnimatedNumber,
+    CreateUser
   },
   data () {
     return {
-      timeout: null,
-      options: {},
       headers: [
         {text: 'Name', value: 'fullName'},
         {text: 'Username', value: 'username'},
         {text: 'Email', value: 'email'},
         {text: 'Last login', value: 'lastLogin'},
-        {text: 'CreatedAt', value: 'createdAt'},
+        {text: 'Created At', value: 'createdAt'},
       ]
     }
   },
@@ -134,12 +162,29 @@ export default {
     }
   },
   computed: {
-    ...mapFields([
-        'loading',
-        'items',
-        'totalItems',
-        'search'
-    ])
+    table: {
+      get() {
+        return this.$store.getters.table
+      }
+    },
+    options: {
+      get() {
+        return this.$store.getters.table.options
+      }
+    },
+    search: {
+      get() {
+        return this.$store.getters.table.search
+      },
+      set(value) {
+        this.$store.commit('search', value)
+      }
+    },
+    snackbar: {
+      get() {
+        return this.$store.getters.snackbar
+      }
+    }
   },
   created() {
     this.userSubscriber()
@@ -147,29 +192,10 @@ export default {
   methods: {
     userSubscriber() {
       UserSubscriber.getUsers()
+      UserSubscriber.userCreated()
     },
     getData() {
-      this.$store.commit('loading', true);
-
-      const { sortBy, sortDesc, page, itemsPerPage } = this.options
-
-      let sortOrder = [];
-      if (0 !== sortDesc.length) {
-        for (const sort of sortDesc) {
-          sortOrder.push(sort ? 'desc': 'asc')
-        }
-      }
-
-      this.$store.dispatch(
-          'getUsers',
-          {
-            sortBy: sortBy,
-            sortOrder: sortOrder,
-            page: page,
-            itemsPerPage: itemsPerPage,
-            search: this.$store.getters.search
-          }
-      )
+      UserData.getData()
     },
   }
 }

@@ -2,7 +2,6 @@
   <span>{{ displayNumber }}</span>
 </template>
 <script>
-import {mapGetters} from "vuex";
 
 export default {
   name: 'AnimatedNumber',
@@ -32,8 +31,12 @@ export default {
       }.bind(this), 75);
     }
   },
-  computed: mapGetters({
-    number: 'totalItems'
-  })
+  computed: {
+    number: {
+      get() {
+        return this.$store.getters.table.totalItems
+      }
+    }
+  }
 }
 </script>
