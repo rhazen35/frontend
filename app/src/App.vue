@@ -15,9 +15,7 @@
             width="40"
         />
         <v-app-bar-title class="ml-2">Skeme</v-app-bar-title>
-
         <v-spacer></v-spacer>
-
         <v-btn
             icon
             @click="logout"
@@ -25,7 +23,6 @@
         >
           <v-icon>mdi-logout</v-icon>
         </v-btn>
-
       </v-app-bar>
       <NavigationDrawer v-if="isAuthenticated"></NavigationDrawer>
       <v-main>
@@ -43,6 +40,7 @@
 <script>
   import NavigationDrawer from './components/layout/NavigationDrawer';
   import LoginExpiredComponent from "./components/authentication/LoginExpired";
+  import AuthenticationSubscriber from './utils/modules/authentication/authenticationSubscriber'
 
   export default {
     name: 'App',
@@ -50,51 +48,25 @@
       NavigationDrawer,
       LoginExpiredComponent
     },
-    data() {
-      return {
-        loginExpiredDialog: false
-      }
-    },
     created() {
-      this.authenticationSubscriber()
+      AuthenticationSubscriber.tokenExpired()
     },
     computed: {
       isAuthenticated: {
         get() {
-          return this.$store.getters['isAuthenticated']
-        }
-      }
-    },
-    methods: {
-      authenticationSubscriber() {
-        const url = new URL('http://127.0.0.1:3000/.well-known/mercure')
-        url.searchParams.append('topic', 'http://127.0.0.1:3000/.well-known/mercure/token_expired')
-
-        const eventSource = new EventSource(url)
-
-        eventSource.onmessage = (event) => {
-          const data = JSON.parse(event.data)
-
-          if (Object.prototype.hasOwnProperty.call(data,'token')) {
-            this.overlay = true
-            this.loginExpiredDialog = true
-
-            this.delay(5000)
-                .then(() => {
-                  this.loginExpiredDialog = false
-                  this.logout()
-                })
-          }
+          return this.$store.getters['authentication/isAuthenticated']
         }
       },
+      loginExpiredDialog: {
+        get() {
+          return this.$store.getters['authentication/loginExpiredDialog']
+        }
+      },
+    },
+    methods: {
       logout() {
         this.$router.push('/logout')
       },
-      delay(t, v) {
-        return new Promise(function(resolve) {
-          setTimeout(resolve.bind(null, v), t)
-        });
-      }
     }
   }
 </script>

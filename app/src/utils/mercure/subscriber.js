@@ -6,22 +6,24 @@ class Subscriber {
   }
 
   subscribe(newTopic) {
-    const hasTopic = store.getters.hasTopic(newTopic)
-
-    if (hasTopic) {
+    if (this.hasTopic(newTopic)) {
       return null
     }
 
     this.url.searchParams.append('topic', `http://127.0.0.1:3000/.well-known/mercure/${newTopic}`)
 
-    const topics = store.getters.topics
+    const topics = store.getters['mercureSubscriber/topics']
     for (let topic of topics) {
       this.url.searchParams.append('topic', `http://127.0.0.1:3000/.well-known/mercure/${topic}`)
     }
 
-    store.dispatch('addTopic', newTopic)
+    store.dispatch('mercureSubscriber/addTopic', newTopic)
 
     return new EventSource(this.url)
+  }
+
+  hasTopic(topic) {
+    return store.getters['mercureSubscriber/hasTopic'](topic)
   }
 }
 

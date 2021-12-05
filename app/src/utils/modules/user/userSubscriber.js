@@ -63,6 +63,38 @@ class UserSubscriber {
             })
         }
     }
+    userDeleted() {
+        const topic = 'user_deleted';
+        const hasTopic = store.getters.hasTopic('user_deleted')
+
+        if (hasTopic) {
+            return
+        }
+
+        const eventSource = MercureSubscriber.subscribe(topic)
+
+        if (null === eventSource) {
+            return
+        }
+
+        eventSource.onmessage = (event) => {
+            const data = JSON.parse(event.data)
+
+            if (topic !== data.channel) {
+                return
+            }
+
+            UserData.getData()
+
+            store.commit('setSnackbar', {
+                title: 'User deleted',
+                text: 'A user has been deleted',
+                color: 'success',
+                icon: 'check-bold',
+                show: true
+            })
+        }
+    }
 }
 
 export default new UserSubscriber()

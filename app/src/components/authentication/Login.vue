@@ -32,11 +32,10 @@
                       name="username"
                       label="Username"
                       type="text"
-                      v-model="username"
+                      v-model="form.username"
                       :error-messages="errors"
                       required
                       @input="textFieldChange"
-                      autofocus
                       color="amber darken-1"
                   ></v-text-field>
                 </validation-provider>
@@ -50,7 +49,7 @@
                       name="password"
                       label="Password"
                       type="password"
-                      v-model="password"
+                      v-model="form.password"
                       :error-messages="errors"
                       required
                       @input="textFieldChange"
@@ -65,22 +64,23 @@
                   class="mb-3"
                   min-width="200px"
                   color="primary"
-                  :disabled="invalidForm"
+                  :disabled="form.invalidForm"
                   @click="authenticate"
+                  autofocus
               >
                 Login
               </v-btn>
             </v-card-actions>
           </v-row>
           <v-overlay
-              :value="showOverlay"
-              :absolute="absolute"
-              :opacity="opacity"
+              :value="form.showOverlay"
+              :absolute="form.absoluteOverlay"
+              opacity="0.5"
           >
             <v-progress-circular
                 :size="70"
                 :width="5"
-                :color="progressCircularColor"
+                color="primary"
                 indeterminate
             ></v-progress-circular>
           </v-overlay>
@@ -113,6 +113,7 @@
 <script>
   import { required, email } from 'vee-validate/dist/rules'
   import { extend, ValidationObserver, ValidationProvider, setInteractionMode } from 'vee-validate'
+  import AuthenticationSubscriber from '../../utils/modules/authentication/authenticationSubscriber'
 
   setInteractionMode('eager')
 
@@ -132,101 +133,55 @@
       ValidationProvider,
       ValidationObserver
     },
-    data() {
-      return {
-        username: null,
-        password: null,
-        showOverlay: false,
-        absolute: true,
-        opacity: 0.5,
-
-        invalidForm: true,
-        errors: {
-          global: '',
-        },
-        snackbar: {
-          show: false,
-          title: null,
-          text: null,
-          color: null,
-          icon: null,
-          mode: null,
-          timeout: 7000,
-        }
-      }
-    },
     computed: {
-      progressCircularColor: {
+      showOverlay: {
         get() {
-          return this.$store.getters.progressCircularColor
+          return this.$store.getters['authentication/showOverlay']
         }
-      }
+      },
+      absoluteOverlay: {
+        get() {
+          return this.$store.getters['authentication/absoluteOverlay']
+        }
+      },
+      form: {
+        get() {
+          return this.$store.getters['authentication/form']
+        }
+      },
+      errors: {
+        get() {
+          return this.$store.getters['authentication/errors']
+        }
+      },
+      snackbar: {
+        get() {
+          return this.$store.getters['authentication/snackbar']
+        }
+      },
     },
     created() {
-      this.authenticatedSubscriber();
+      AuthenticationSubscriber.authenticated()
+      AuthenticationSubscriber.invalidCredentials()
     },
     methods: {
       textFieldChange() {
         if (null !== this.username && null !== this.password) {
-          this.invalidForm = false;
-          this.errors.global = ''
+          this.$store.commit('authentication/invalidForm', false)
+          this.$store.commit('authentication/globalError', '')
         }
       },
       authenticate() {
-        this.enableLoading()
+        this.$store.commit('authentication/showOverlay', true)
         this.$refs.observer.validate()
         this.$store.dispatch(
-            'authenticate',
+            'authentication/authenticate',
             {
-              username: this.username,
-              password: this.password
+              username: this.form.username,
+              password: this.form.password
             }
         )
       },
-      authenticatedSubscriber() {
-        const topic = 'user_authenticated';
-        const eventSource = this.$mercureSubscriber.subscribe(topic)
-
-        if (null === eventSource) {
-          return
-        }
-
-        eventSource.onmessage = (event) => {
-          const data = JSON.parse(event.data)
-
-          if (topic !== data.channel) {
-            return
-          }
-
-          this.disableLoading()
-
-          if (Object.prototype.hasOwnProperty.call(data, 'errors')) {
-            data.errors.forEach((error) => {
-              if ("" === error.propertyPath) {
-                this.errors.global = error.message;
-                this.snackbar.title = 'Validation error';
-                this.snackbar.text = 'The form contains validation errors';
-                this.snackbar.color = 'error';
-                this.snackbar.icon = 'alert-circle';
-                this.snackbar.show = true;
-              }
-            });
-          }
-
-          if (Object.prototype.hasOwnProperty.call(data, 'token')) {
-            this.$store.dispatch('login', data.token)
-            if (this.$route.path !== '/') {
-              this.$router.push('/')
-            }
-          }
-        }
-      },
-      enableLoading() {
-        this.showOverlay = true;
-      },
-      disableLoading() {
-        this.showOverlay = false;
-      }
     },
   };
 </script>

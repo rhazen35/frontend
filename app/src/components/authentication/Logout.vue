@@ -4,7 +4,7 @@
 <script>
   export default {
     created() {
-      this.$store.dispatch('logout');
+      this.$store.dispatch('authentication/logout');
       this.$router.push('/login');
     }
   }

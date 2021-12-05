@@ -93,6 +93,21 @@
           'items-per-page-options': [10, 20, 30, 40, 50, 100]
         }"
     >
+      <template v-slot:item.actions="{ item }">
+        <v-icon
+            small
+            class="mr-2"
+            @click="editItem(item)"
+        >
+          mdi-pencil
+        </v-icon>
+        <v-icon
+            small
+            @click="deleteItem(item)"
+        >
+          mdi-delete
+        </v-icon>
+      </template>
       <template v-slot:item.fullName="{ item }">
           <span>{{ item.fullName }}</span>
       </template>
@@ -122,13 +137,42 @@
         </v-layout>
       </v-layout>
     </v-snackbar>
+    <v-dialog
+        v-model="dialogDelete"
+        max-width="500px"
+        overlay-opacity="0.90"
+    >
+      <v-card>
+        <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+              color="red darken-1"
+              text
+              @click="closeDelete"
+          >
+            <v-icon left>mdi-cancel</v-icon>
+            Cancel
+          </v-btn>
+          <v-btn
+              color="green darken-1"
+              text
+              @click="deleteItemConfirm"
+          >
+            <v-icon left>mdi-check</v-icon>
+            OK
+          </v-btn>
+          <v-spacer></v-spacer>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script>
 import AnimatedNumber from "../../components/layout/AnimatedNumber"
 import UserSubscriber from '../../utils/modules/user/userSubscriber'
-import {debounce} from '../../utils/helpers/helpers'
+import {debounce} from '../../utils/helpers/helper'
 import CreateUser from "../../components/modules/user/CreateUser.vue"
 import UserData from '../../utils/modules/user/userData'
 
@@ -140,12 +184,14 @@ export default {
   },
   data () {
     return {
+      dialogDelete: false,
       headers: [
         {text: 'Name', value: 'fullName'},
         {text: 'Username', value: 'username'},
         {text: 'Email', value: 'email'},
         {text: 'Last login', value: 'lastLogin'},
         {text: 'Created At', value: 'createdAt'},
+        { text: 'Actions', value: 'actions', sortable: false },
       ]
     }
   },
@@ -159,7 +205,10 @@ export default {
       handler: debounce(function () {
         this.getData()
       }, 500)
-    }
+    },
+    dialogDelete (val) {
+      val || this.closeDelete()
+    },
   },
   computed: {
     table: {
@@ -193,9 +242,34 @@ export default {
     userSubscriber() {
       UserSubscriber.getUsers()
       UserSubscriber.userCreated()
+      UserSubscriber.userDeleted()
     },
     getData() {
       UserData.getData()
+    },
+    editItem (item) {
+      this.$store.dispatch(
+          'editDialog',
+          {
+            editedIndex: this.table.items.indexOf(item),
+            editedItem: item,
+            formDialog: true
+          }
+      )
+    },
+    close () {
+      this.$store.commit('formDialog', false)
+    },
+    deleteItem (item) {
+      this.$store.commit('editedItem', item)
+      this.dialogDelete = true
+    },
+    deleteItemConfirm () {
+      this.$store.dispatch('deleteUser')
+      this.closeDelete()
+    },
+    closeDelete () {
+      this.dialogDelete = false
     },
   }
 }
