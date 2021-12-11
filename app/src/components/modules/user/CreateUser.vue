@@ -20,7 +20,7 @@
           <v-icon left>
             mdi-plus
           </v-icon>
-          {{ form.title }}
+          New User
         </v-btn>
       </template>
       <v-card>
@@ -204,6 +204,7 @@
 
 import { required, email } from 'vee-validate/dist/rules'
 import { extend, ValidationObserver, ValidationProvider, setInteractionMode } from 'vee-validate'
+import {setFavicon, setDefaultFavicon} from "../../../utils/helpers/favicon";
 
 setInteractionMode('eager')
 
@@ -230,45 +231,67 @@ export default {
     }
   },
   created() {
-    this.$store.commit('formTitle')
-    this.$store.commit('formTitleIcon')
-    this.$store.commit('mode')
+    this.$store.commit('user/formTitle')
+    this.$store.commit('user/formTitleIcon')
+    this.$store.commit('user/mode')
+  },
+  watch: {
+    dialog: {
+      handler (value) {
+        this.documentTitle(value)
+      }
+    }
   },
   computed: {
     form: {
       get() {
-        return this.$store.getters.form
+        return this.$store.getters['user/form']
       }
     },
     user: {
       get() {
-        return this.$store.getters.user
+        return this.$store.getters['user/user']
       }
     },
-    progressCircularColor: {
+    dialog: {
       get() {
-        return this.$store.getters.progressCircularColor
+        return this.$store.getters['user/form'].dialog
       }
-    },
+    }
   },
   methods: {
+    documentTitle (value) {
+      document.title = true === value
+          ? 'User Management | ' + this.$store.getters['user/form'].title
+          : 'User Management'
+
+      const favIcon = this.form.editedIndex === -1
+          ? 'create_user'
+          : 'update_user'
+
+      true === value
+          ? setFavicon(favIcon)
+          : setDefaultFavicon()
+    },
     close () {
-      this.$store.commit('formDialog', false)
+      this.$store.commit('user/resetEditedItem', false)
+      this.$store.commit('user/formTitle')
+      this.$store.commit('user/formDialog', false)
     },
     save () {
       this.$refs.observer.validate()
-      this.$store.commit('createLoading', true)
-      if (this.$store.getters.form.editedIndex > -1) {
+      this.$store.commit('user/createLoading', true)
+      if (this.$store.getters['user/form'].editedIndex > -1) {
         console.log('update')
       } else {
-        this.$store.dispatch('addUser')
-        this.$store.commit('createLoading', false)
-        this.$store.commit('resetUser', false)
+        this.$store.dispatch('user/addUser')
+        this.$store.commit('user/createLoading', false)
+        this.$store.commit('user/resetUser', false)
         this.close()
       }
     },
     clear () {
-      this.$store.commit('resetUser', false)
+      this.$store.commit('user/resetUser', false)
       this.$refs.observer.reset()
     }
   }

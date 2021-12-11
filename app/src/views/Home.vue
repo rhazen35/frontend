@@ -29,6 +29,9 @@ export default {
     return {
 
     }
-  }
+  },
+  mounted() {
+    document.title = 'Home'
+  },
 }
 </script>

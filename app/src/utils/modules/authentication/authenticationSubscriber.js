@@ -62,23 +62,29 @@ class AuthenticationSubscriber {
         eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data)
 
-            if (Object.prototype.hasOwnProperty.call(data, 'errors')) {
-                data.errors.forEach((error) => {
-                    if ("" === error.propertyPath) {
-                        store.commit('authentication/globalError', error.message)
-                        store.commit(
-                            'authentication/snackbar',
-                            {
-                                title: 'Validation error',
-                                text: 'The form contains validation errors',
-                                color: 'error',
-                                icon: 'alert-circle',
-                                show: true
-                            }
-                        )
-                    }
-                });
+            if (!Object.prototype.hasOwnProperty.call(data, 'errors')) {
+                store.commit('authentication/showOverlay', false)
+
+                return
             }
+
+            data.errors.forEach((error) => {
+                if ("" !== error.propertyPath) {
+                    return
+                }
+
+                store.commit('authentication/globalError', error.message)
+                store.commit(
+                    'authentication/snackbar',
+                    {
+                        title: 'Validation error',
+                        text: 'The form contains validation errors',
+                        color: 'error',
+                        icon: 'alert-circle',
+                        show: true
+                    }
+                )
+            });
 
             store.commit('authentication/showOverlay', false)
         }

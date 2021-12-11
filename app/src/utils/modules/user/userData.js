@@ -1,10 +1,13 @@
 import store from '../../../store/store'
+import {setFavicon} from "../../helpers/favicon";
 
 class UserData {
     getData() {
-        store.commit('loading', true);
+        setFavicon('get_users')
+        document.title = 'User Management | Loading...'
+        store.commit('user/loading', true);
 
-        const { sortBy, sortDesc, page, itemsPerPage } = store.getters.table.options
+        const { sortBy, sortDesc, page, itemsPerPage } = store.getters['user/options']
 
         let sortOrder = [];
         if (0 !== sortDesc.length) {
@@ -14,13 +17,13 @@ class UserData {
         }
 
         store.dispatch(
-            'getUsers',
+            'user/getUsers',
             {
                 sortBy: sortBy,
                 sortOrder: sortOrder,
                 page: page,
                 itemsPerPage: itemsPerPage,
-                search: store.getters.table.search
+                search: store.getters['user/table'].search
             }
         )
     }

@@ -86,7 +86,7 @@
         :page.sync="table.options.page"
         :server-items-length="table.totalItems"
         :loading="table.loading"
-        :search="table.search"
+        :search="search"
         class="elevation-20"
         multi-sort
         :footer-props="{
@@ -175,6 +175,7 @@ import UserSubscriber from '../../utils/modules/user/userSubscriber'
 import {debounce} from '../../utils/helpers/helper'
 import CreateUser from "../../components/modules/user/CreateUser.vue"
 import UserData from '../../utils/modules/user/userData'
+import {setDefaultFavicon, setFavicon} from "../../utils/helpers/favicon";
 
 export default {
   name: 'User',
@@ -184,7 +185,6 @@ export default {
   },
   data () {
     return {
-      dialogDelete: false,
       headers: [
         {text: 'Name', value: 'fullName'},
         {text: 'Username', value: 'username'},
@@ -198,42 +198,51 @@ export default {
   watch : {
     options: {
       handler () {
-          this.getData()
+        UserData.getData()
       }
     },
     search: {
       handler: debounce(function () {
-        this.getData()
+        UserData.getData()
       }, 500)
     },
-    dialogDelete (val) {
-      val || this.closeDelete()
+    dialogDelete (value) {
+      value || this.closeDelete()
+      this.documentTitle(value)
     },
   },
   computed: {
     table: {
       get() {
-        return this.$store.getters.table
+        return this.$store.getters['user/table']
       }
     },
     options: {
-      get() {
-        return this.$store.getters.table.options
+      get () {
+        return this.$store.getters['user/options']
       }
     },
     search: {
       get() {
-        return this.$store.getters.table.search
+        return this.$store.getters['user/table'].search
       },
       set(value) {
-        this.$store.commit('search', value)
+        this.$store.commit('user/search', value)
       }
     },
     snackbar: {
       get() {
-        return this.$store.getters.snackbar
+        return this.$store.getters['user/snackbar']
+      }
+    },
+    dialogDelete: {
+      get() {
+        return this.$store.getters['user/form'].dialogDelete
       }
     }
+  },
+  mounted() {
+    document.title = 'User Management'
   },
   created() {
     this.userSubscriber()
@@ -244,12 +253,9 @@ export default {
       UserSubscriber.userCreated()
       UserSubscriber.userDeleted()
     },
-    getData() {
-      UserData.getData()
-    },
     editItem (item) {
       this.$store.dispatch(
-          'editDialog',
+          'user/editDialog',
           {
             editedIndex: this.table.items.indexOf(item),
             editedItem: item,
@@ -258,18 +264,27 @@ export default {
       )
     },
     close () {
-      this.$store.commit('formDialog', false)
+      this.$store.commit('user/formDialog', false)
     },
     deleteItem (item) {
-      this.$store.commit('editedItem', item)
-      this.dialogDelete = true
+      this.$store.commit('user/editedItem', item)
+      this.$store.commit('user/deleteDialog', true)
     },
     deleteItemConfirm () {
-      this.$store.dispatch('deleteUser')
+      this.$store.dispatch('user/deleteUser')
       this.closeDelete()
     },
     closeDelete () {
-      this.dialogDelete = false
+      this.$store.commit('user/deleteDialog', false)
+    },
+    documentTitle (value) {
+      document.title = true === value
+          ? 'User Management | Delete User'
+          : 'User Management'
+
+      true === value
+          ? setFavicon('delete_user')
+          : setDefaultFavicon()
     },
   }
 }

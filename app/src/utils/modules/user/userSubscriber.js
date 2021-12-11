@@ -1,17 +1,21 @@
 import store from '../../../store/store';
 import MercureSubscriber from '../../mercure/subscriber'
 import UserData from './userData'
+import {setDefaultFavicon, setFavicon} from "../../helpers/favicon";
 
 class UserSubscriber {
+    getUsersResultTopic
+    userCreatedTopic
+    userDeletedTopic
+
+    constructor() {
+        this.getUsersResultTopic = 'get_users_result'
+        this.userCreatedTopic = 'user_created'
+        this.userDeletedTopic = 'user_deleted'
+    }
+
     getUsers() {
-        const topic = 'get_users_result';
-        const hasTopic = store.getters.hasTopic(topic)
-
-        if (hasTopic) {
-            return
-        }
-
-        const eventSource = MercureSubscriber.subscribe(topic)
+        const eventSource = MercureSubscriber.subscribe(this.getUsersResultTopic)
 
         if (null === eventSource) {
             return
@@ -20,26 +24,22 @@ class UserSubscriber {
         eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data)
 
-            if (topic !== data.channel) {
+            if (data.channel !== this.getUsersResultTopic) {
                 return
             }
 
             if (Object.prototype.hasOwnProperty.call(data,'users')) {
-                store.commit('loading', false)
-                store.commit('totalItems', data.users.totalHits)
-                store.commit('items', data.users.items)
+                store.commit('user/loading', false)
+                store.commit('user/totalItems', data.users.totalHits)
+                store.commit('user/items', data.users.items)
+
+                setDefaultFavicon()
+                document.title = 'User Management'
             }
         }
     }
     userCreated() {
-        const topic = 'user_created';
-        const hasTopic = store.getters.hasTopic('user_created')
-
-        if (hasTopic) {
-            return
-        }
-
-        const eventSource = MercureSubscriber.subscribe(topic)
+        const eventSource = MercureSubscriber.subscribe(this.userCreatedTopic)
 
         if (null === eventSource) {
             return
@@ -48,30 +48,29 @@ class UserSubscriber {
         eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data)
 
-            if (topic !== data.channel) {
+            if (data.channel !== this.userCreatedTopic) {
                 return
             }
 
             UserData.getData()
 
-            store.commit('setSnackbar', {
+            store.commit('user/setSnackbar', {
                 title: 'User created',
                 text: 'A new user has been created',
                 color: 'success',
                 icon: 'check-bold',
                 show: true
             })
+
+            setFavicon('user_checked')
+            setTimeout(() => {
+                setDefaultFavicon()
+                document.title = 'User Management'
+            }, store.getters['user/snackbar'].timeout)
         }
     }
     userDeleted() {
-        const topic = 'user_deleted';
-        const hasTopic = store.getters.hasTopic('user_deleted')
-
-        if (hasTopic) {
-            return
-        }
-
-        const eventSource = MercureSubscriber.subscribe(topic)
+        const eventSource = MercureSubscriber.subscribe(this.userDeletedTopic)
 
         if (null === eventSource) {
             return
@@ -80,19 +79,22 @@ class UserSubscriber {
         eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data)
 
-            if (topic !== data.channel) {
+            if (data.channel !== this.userDeletedTopic) {
                 return
             }
 
             UserData.getData()
 
-            store.commit('setSnackbar', {
+            store.commit('user/setSnackbar', {
                 title: 'User deleted',
                 text: 'A user has been deleted',
                 color: 'success',
                 icon: 'check-bold',
                 show: true
             })
+
+            setDefaultFavicon()
+            document.title = 'User Management'
         }
     }
 }

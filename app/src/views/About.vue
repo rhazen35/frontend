@@ -7,6 +7,9 @@
 
 <script>
   export default {
-    name: 'About'
+    name: 'About',
+    mounted() {
+      document.title = 'About'
+    },
   }
 </script>

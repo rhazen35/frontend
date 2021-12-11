@@ -160,6 +160,9 @@
         }
       },
     },
+    mounted() {
+      document.title = 'Login'
+    },
     created() {
       AuthenticationSubscriber.authenticated()
       AuthenticationSubscriber.invalidCredentials()
